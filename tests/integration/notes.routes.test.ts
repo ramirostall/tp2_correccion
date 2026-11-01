@@ -55,3 +55,33 @@ describe('Integración - PATCH /notes/:id (Ejercicio 4)', () => {
     expect(res.status).toBe(404);
   });
 });
+
+// Test del Ejercicio 5:
+describe('Integración - DELETE /notes/:id (Ejercicio 5)', () => {
+  let app: Express;
+
+  beforeEach(() => {
+    app = makeApp(':memory:');
+  });
+
+  it('devuelve 204 y la nota deja de existir', async () => {
+    const created = await request(app)
+      .post('/notes')
+      .send({ title: 'Comprar pan', content: 'Antes de las 20hs' });
+
+    const res = await request(app).delete(`/notes/${created.body.id}`);
+
+    expect(res.status).toBe(204);
+    expect(res.body).toEqual({});
+
+    const after = await request(app).get(`/notes/${created.body.id}`);
+    expect(after.status).toBe(404);
+  });
+
+  it('devuelve 404 cuando el id no existe', async () => {
+    const res = await request(app).delete('/notes/999');
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'NotFound' });
+  });
+});
